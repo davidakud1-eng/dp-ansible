@@ -1,0 +1,6 @@
+---
+- name: Install Git
+  import_tasks: install.yml
+
+- name: Verify Git Installation
+  import_tasks: verify.yml

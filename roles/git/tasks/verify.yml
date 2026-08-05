@@ -1,0 +1,9 @@
+---
+- name: Check installed Git version
+  ansible.builtin.command: git --version
+  register: git_version
+  changed_when: false
+
+- name: Display installed Git version
+  ansible.builtin.debug:
+    msg: "{{ git_version.stdout }}"
