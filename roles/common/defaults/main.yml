@@ -1,0 +1,13 @@
+---
+system_timezone: Africa/Lagos
+
+common_packages:
+  - git
+  - wget
+  - unzip
+  - zip
+  - tar
+  - tree
+  - vim
+  - jq
+  - bash-completion

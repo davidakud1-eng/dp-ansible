@@ -1,0 +1,14 @@
+---
+# ============================================================================
+# Common Role
+# Baseline configuration for every DP Platform server
+# ============================================================================
+
+- name: Update package metadata
+  import_tasks: update.yml
+
+- name: Install common packages
+  import_tasks: packages.yml
+
+- name: Configure timezone
+  import_tasks: timezone.yml

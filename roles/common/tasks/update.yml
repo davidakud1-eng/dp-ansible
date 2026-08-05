@@ -1,0 +1,4 @@
+---
+- name: Refresh DNF package cache
+  ansible.builtin.dnf:
+    update_cache: true

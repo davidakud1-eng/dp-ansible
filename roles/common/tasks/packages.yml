@@ -1,0 +1,5 @@
+---
+- name: Install common system packages
+  ansible.builtin.dnf:
+    name: "{{ common_packages }}"
+    state: present

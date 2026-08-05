@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+ansible-env/
+
+# AWS Keys
+*.pem
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Ansible
+*.retry
