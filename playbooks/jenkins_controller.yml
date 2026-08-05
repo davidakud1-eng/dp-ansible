@@ -1,0 +1,16 @@
+---
+- name: Configure Jenkins Controller
+  hosts: jenkins
+  remote_user: ec2-user
+
+  become: true
+  become_method: sudo
+  become_flags: -n
+
+  gather_facts: true
+
+  roles:
+    - common
+    - git
+    - java
+    - jenkins

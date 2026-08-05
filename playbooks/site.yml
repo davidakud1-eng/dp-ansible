@@ -1,14 +1,6 @@
 ---
-- name: Configure Entire DP DevSecOps Platform
-  hosts: devsecops_platform
-  remote_user: ec2-user
+- import_playbook: jenkins_controller.yml
 
-  become: true
-  become_method: sudo
-  become_flags: -n
+- import_playbook: build_agent.yml
 
-  gather_facts: true
-
-  roles:
-    - common
-    - git
+- import_playbook: platform_ops.yml

@@ -1,0 +1,9 @@
+---
+- name: Install Java
+  import_tasks: install.yml
+
+- name: Configure Java
+  import_tasks: configure.yml
+
+- name: Verify Java
+  import_tasks: verify.yml

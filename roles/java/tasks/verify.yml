@@ -1,0 +1,49 @@
+---
+- name: Verify Java Runtime
+  ansible.builtin.command: java -version
+  register: java_version
+  changed_when: false
+
+- name: Display Java Runtime
+  ansible.builtin.debug:
+    msg: "{{ java_version.stderr_lines }}"
+
+- name: Verify Java Compiler
+  ansible.builtin.command: javac -version
+  register: javac_version
+  changed_when: false
+
+- name: Display Java Compiler
+  ansible.builtin.debug:
+    msg: "{{ javac_version.stdout }}"
+
+- name: Verify Java executable location
+  ansible.builtin.command: which java
+  register: java_path
+  changed_when: false
+
+- name: Display Java executable location
+  ansible.builtin.debug:
+    msg: "{{ java_path.stdout }}"
+
+- name: Verify actual Java installation
+  ansible.builtin.shell: readlink -f $(which java)
+  args:
+    executable: /bin/bash
+  register: java_real_path
+  changed_when: false
+
+- name: Display actual Java installation
+  ansible.builtin.debug:
+    msg: "{{ java_real_path.stdout }}"
+
+- name: Verify JAVA_HOME configuration
+  ansible.builtin.shell: source /etc/profile.d/java.sh && echo $JAVA_HOME
+  args:
+    executable: /bin/bash
+  register: java_home_check
+  changed_when: false
+
+- name: Display JAVA_HOME
+  ansible.builtin.debug:
+    msg: "{{ java_home_check.stdout }}"

@@ -1,0 +1,10 @@
+---
+- name: Configure JAVA_HOME
+  ansible.builtin.copy:
+    dest: /etc/profile.d/java.sh
+    content: |
+      export JAVA_HOME={{ java_home }}
+      export PATH=$JAVA_HOME/bin:$PATH
+    owner: root
+    group: root
+    mode: '0644'

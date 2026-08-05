@@ -1,0 +1,16 @@
+---
+- name: Configure Build Agent
+  hosts: build_agents
+  remote_user: ec2-user
+
+  become: true
+  become_method: sudo
+  become_flags: -n
+
+  gather_facts: true
+
+  roles:
+    - common
+    - git
+    - java
+    - build_agent
