@@ -1,0 +1,9 @@
+---
+- name: Install Maven
+  import_tasks: install.yml
+
+- name: Configure Maven
+  import_tasks: configure.yml
+
+- name: Verify Maven
+  import_tasks: verify.yml

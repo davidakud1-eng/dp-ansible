@@ -1,0 +1,18 @@
+---
+- name: Verify Maven installation
+  ansible.builtin.command: mvn -version
+  register: maven_version
+  changed_when: false
+
+- name: Display Maven version
+  ansible.builtin.debug:
+    msg: "{{ maven_version.stdout_lines }}"
+
+- name: Verify Maven executable
+  ansible.builtin.command: which mvn
+  register: maven_path
+  changed_when: false
+
+- name: Display Maven executable
+  ansible.builtin.debug:
+    msg: "{{ maven_path.stdout }}"

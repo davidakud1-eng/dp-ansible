@@ -13,4 +13,6 @@
     - common
     - git
     - java
+    - maven
+    - docker
     - build_agent

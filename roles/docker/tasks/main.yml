@@ -1,0 +1,14 @@
+---
+# ============================================================================
+# Docker Role
+# Install and configure Docker Engine on the Build Agent
+# ============================================================================
+
+- name: Install Docker
+  import_tasks: install.yml
+
+- name: Configure Docker
+  import_tasks: configure.yml
+
+- name: Verify Docker
+  import_tasks: verify.yml

@@ -1,0 +1,5 @@
+---
+maven_package_name: maven
+maven_local_repo: /home/ec2-user/.m2/repository
+maven_settings_dir: /home/ec2-user/.m2
+maven_settings_file: /home/ec2-user/.m2/settings.xml

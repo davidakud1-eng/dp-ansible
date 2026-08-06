@@ -1,0 +1,34 @@
+---
+- name: Verify Docker version
+  ansible.builtin.command: docker version
+  register: docker_version
+  changed_when: false
+
+- name: Display Docker version
+  ansible.builtin.debug:
+    msg: "{{ docker_version.stdout_lines }}"
+
+- name: Verify Docker executable
+  ansible.builtin.command: which docker
+  register: docker_path
+  changed_when: false
+
+- name: Display Docker executable
+  ansible.builtin.debug:
+    msg: "{{ docker_path.stdout }}"
+
+- name: Verify Docker daemon
+  ansible.builtin.command: docker info
+  register: docker_info
+  changed_when: false
+
+- name: Display Docker daemon status
+  ansible.builtin.debug:
+    msg: "Docker daemon is running."
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Display Docker service state
+  ansible.builtin.debug:
+    msg: "{{ ansible_facts.services[docker_service_name + '.service'].state }}"

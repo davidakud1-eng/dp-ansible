@@ -1,0 +1,5 @@
+---
+- name: Install Docker Engine
+  ansible.builtin.package:
+    name: "{{ docker_package_name }}"
+    state: present
