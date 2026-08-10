@@ -1,0 +1,23 @@
+---
+- name: Create Jenkins SSH directory
+  ansible.builtin.file:
+    path: "{{ jenkins_ssh_dir }}"
+    state: directory
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_user }}"
+    mode: "0700"
+
+- name: Check whether Jenkins SSH private key exists
+  ansible.builtin.stat:
+    path: "{{ jenkins_private_key }}"
+  register: jenkins_ssh_key
+
+- name: Generate Jenkins Ed25519 SSH key
+  ansible.builtin.command:
+    cmd: >
+      ssh-keygen
+      -t ed25519
+      -N ""
+      -f {{ jenkins_private_key }}
+  become_user: "{{ jenkins_user }}"
+  when: not jenkins_ssh_key.stat.exists

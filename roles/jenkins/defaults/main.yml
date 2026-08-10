@@ -1,0 +1,43 @@
+# ============================================================================
+# Jenkins Service
+# ============================================================================
+
+jenkins_package_name: jenkins
+jenkins_service_name: jenkins
+
+jenkins_http_port: 8080
+jenkins_home: /var/lib/jenkins
+
+# ============================================================================
+# Jenkins Administration
+# ============================================================================
+
+jenkins_admin_user: admin
+
+# ============================================================================
+# Jenkins Repository
+# ============================================================================
+
+jenkins_repository_name: jenkins
+jenkins_repository_description: Jenkins Stable Repository
+jenkins_repository_baseurl: https://pkg.jenkins.io/rpm-stable
+jenkins_repository_gpg_key: https://pkg.jenkins.io/rpm-stable/jenkins.io-2026.key
+
+# ============================================================================
+# Jenkins Configuration as Code
+# ============================================================================
+
+jenkins_casc_directory: /var/lib/jenkins/casc_configs
+
+jenkins_admin_username: kingdayve
+jenkins_admin_full_name: David Aku
+
+jenkins_admin_password: "{{ vault_jenkins_admin_password }}"
+
+jenkins_url: "http://3.147.63.167:8080/"
+
+jenkins_system_message: |
+  ============================================================================
+  DP DevSecOps Platform
+  Managed by Jenkins Configuration as Code (JCasC)
+  ============================================================================

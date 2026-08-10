@@ -1,0 +1,17 @@
+jenkins:
+
+  systemMessage: |
+{{ jenkins_system_message | indent(4, true) }}
+
+  mode: NORMAL
+
+  numExecutors: 0
+
+  scmCheckoutRetryCount: 2
+
+  slaveAgentPort: -1
+
+  crumbIssuer: "standard"
+
+  remotingSecurity:
+    enabled: true

@@ -1,18 +1,81 @@
+# ============================================================================
 # Python
+# ============================================================================
 __pycache__/
 *.pyc
+*.pyo
 
-# Virtual Environment
+# ============================================================================
+# Python Virtual Environments
+# ============================================================================
 ansible-env/
+.venv/
+venv/
 
-# AWS Keys
+# ============================================================================
+# AWS / SSH Private Keys
+# ============================================================================
 *.pem
+*.key
 
-# VS Code
-.vscode/
-
-# macOS
-.DS_Store
-
+# ============================================================================
 # Ansible
+# ============================================================================
+
+# Retry files
 *.retry
+
+# Downloaded Ansible Galaxy collections
+# Dependencies are defined in requirements.yml
+collections/
+
+# Real encrypted project secrets
+# Commit vault.yml.example instead
+inventory/group_vars/all/vault.yml
+
+# ============================================================================
+# Terraform
+# ============================================================================
+
+# Terraform working directory
+.terraform/
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Saved Terraform plans
+*.tfplan
+
+# Terraform variable files may contain secrets
+*.tfvars
+*.tfvars.json
+
+# Crash logs
+crash.log
+crash.*.log
+
+# NOTE:
+# .terraform.lock.hcl is intentionally NOT ignored.
+# It should normally be committed for reproducible provider versions.
+
+# ============================================================================
+# Environment / Secret Files
+# ============================================================================
+.env
+.env.*
+!.env.example
+
+# ============================================================================
+# VS Code / Editors
+# ============================================================================
+.vscode/
+*.swp
+*.swo
+*~
+
+# ============================================================================
+# Operating System Files
+# ============================================================================
+.DS_Store
+Thumbs.db

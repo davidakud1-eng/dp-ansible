@@ -1,0 +1,23 @@
+---
+- name: Import Jenkins repository GPG key
+  ansible.builtin.rpm_key:
+    state: present
+    key: "{{ jenkins_repository_gpg_key }}"
+
+- name: Add Jenkins repository
+  ansible.builtin.yum_repository:
+    name: "{{ jenkins_repository_name }}"
+    description: "{{ jenkins_repository_description }}"
+    baseurl: "{{ jenkins_repository_baseurl }}"
+    gpgcheck: true
+    gpgkey: "{{ jenkins_repository_gpg_key }}"
+    enabled: true
+
+- name: Refresh DNF package cache
+  ansible.builtin.dnf:
+    update_cache: true
+
+- name: Install Jenkins
+  ansible.builtin.package:
+    name: "{{ jenkins_package_name }}"
+    state: present

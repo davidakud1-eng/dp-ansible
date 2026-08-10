@@ -1,0 +1,5 @@
+---
+- name: Enable Jenkins service
+  ansible.builtin.service:
+    name: "{{ jenkins_service_name }}"
+    enabled: true

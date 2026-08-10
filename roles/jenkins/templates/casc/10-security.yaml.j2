@@ -1,0 +1,16 @@
+jenkins:
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+        - id: "{{ jenkins_admin_username }}"
+          name: "{{ jenkins_admin_full_name }}"
+          password: "{{ jenkins_admin_password }}"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+  disableRememberMe: false

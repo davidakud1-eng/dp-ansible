@@ -1,0 +1,12 @@
+---
+- name: Create Jenkins SSH identity
+  ansible.builtin.import_tasks: install.yml
+
+- name: Distribute Jenkins SSH public key
+  ansible.builtin.import_tasks: distribute.yml
+
+- name: Configure Jenkins known hosts
+  ansible.builtin.import_tasks: known_hosts.yml
+
+- name: Verify Jenkins SSH connectivity
+  ansible.builtin.import_tasks: verify.yml

@@ -1,0 +1,28 @@
+---
+# ============================================================================
+# Jenkins SSH Known Hosts
+# ============================================================================
+
+- name: Scan SSH host keys from Jenkins agents
+  ansible.builtin.command:
+    cmd: "ssh-keyscan -t ed25519 {{ hostvars[item].private_ip }}"
+  loop: "{{ groups['build_agents'] + groups['platform_ops'] }}"
+  register: jenkins_agent_host_keys
+  changed_when: false
+
+- name: Add Jenkins agents to Jenkins known_hosts
+  ansible.builtin.known_hosts:
+    path: "{{ jenkins_ssh_dir }}/known_hosts"
+    name: "{{ hostvars[item.item].private_ip }}"
+    key: "{{ item.stdout }}"
+    state: present
+    hash_host: true
+  loop: "{{ jenkins_agent_host_keys.results }}"
+  when: item.stdout | length > 0
+
+- name: Set ownership and permissions on Jenkins known_hosts
+  ansible.builtin.file:
+    path: "{{ jenkins_ssh_dir }}/known_hosts"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_user }}"
+    mode: "0600"

@@ -1,0 +1,35 @@
+---
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Display Jenkins service state
+  ansible.builtin.debug:
+    msg: "{{ ansible_facts.services[jenkins_service_name + '.service'].state }}"
+
+- name: Verify Jenkins is listening on port {{ jenkins_http_port }}
+  ansible.builtin.wait_for:
+    port: "{{ jenkins_http_port }}"
+    timeout: 180
+
+- name: Check Jenkins initial admin password exists
+  ansible.builtin.stat:
+    path: "{{ jenkins_home }}/secrets/initialAdminPassword"
+  register: jenkins_admin_password_file
+
+- name: Display initial admin password file status
+  ansible.builtin.debug:
+    msg: >-
+      Initial admin password file exists:
+      {{ jenkins_admin_password_file.stat.exists }}
+
+- name: Read Jenkins initial admin password
+  ansible.builtin.command:
+    cmd: cat {{ jenkins_home }}/secrets/initialAdminPassword
+  register: jenkins_initial_password
+  changed_when: false
+  when: jenkins_admin_password_file.stat.exists
+
+- name: Display Jenkins initial admin password
+  ansible.builtin.debug:
+    msg: "{{ jenkins_initial_password.stdout }}"
+  when: jenkins_admin_password_file.stat.exists

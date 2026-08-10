@@ -1,0 +1,39 @@
+---
+# ============================================================================
+# Read Jenkins Controller Public Key
+# ============================================================================
+
+- name: Read Jenkins SSH public key
+  ansible.builtin.slurp:
+    src: "{{ jenkins_public_key }}"
+  register: jenkins_public_key_raw
+
+- name: Decode Jenkins SSH public key
+  ansible.builtin.set_fact:
+    jenkins_public_key_content: >-
+      {{ jenkins_public_key_raw.content | b64decode | trim }}
+
+# ============================================================================
+# Configure Jenkins SSH Trust on Agents
+# ============================================================================
+
+- name: Ensure agent SSH directory exists
+  ansible.builtin.file:
+    path: "/home/{{ jenkins_agent_user }}/.ssh"
+    state: directory
+    owner: "{{ jenkins_agent_user }}"
+    group: "{{ jenkins_agent_user }}"
+    mode: "0700"
+  become: false
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['build_agents'] + groups['platform_ops'] }}"
+
+- name: Authorize Jenkins controller public key on agents
+  ansible.posix.authorized_key:
+    user: "{{ jenkins_agent_user }}"
+    state: present
+    key: "{{ jenkins_public_key_content }}"
+    manage_dir: true
+  become: false
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['build_agents'] + groups['platform_ops'] }}"

@@ -1,0 +1,27 @@
+---
+# ============================================================================
+# Verify Jenkins SSH Connectivity
+# ============================================================================
+
+- name: Verify Jenkins SSH connectivity to agents
+  ansible.builtin.command:
+    cmd: >-
+      ssh
+      -i {{ jenkins_private_key }}
+      -o BatchMode=yes
+      -o StrictHostKeyChecking=yes
+      {{ jenkins_agent_user }}@{{ hostvars[item].private_ip }}
+      "echo SSH_OK && hostname"
+  become: true
+  become_user: "{{ jenkins_user }}"
+  loop: "{{ groups['build_agents'] + groups['platform_ops'] }}"
+  register: jenkins_ssh_verification
+  changed_when: false
+
+- name: Display Jenkins SSH verification results
+  ansible.builtin.debug:
+    msg:
+      - "Agent: {{ item.item }}"
+      - "Private IP: {{ hostvars[item.item].private_ip }}"
+      - "{{ item.stdout }}"
+  loop: "{{ jenkins_ssh_verification.results }}"

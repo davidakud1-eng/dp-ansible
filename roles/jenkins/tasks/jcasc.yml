@@ -1,0 +1,55 @@
+---
+- name: Create JCasC directory
+  ansible.builtin.file:
+    path: "{{ jenkins_casc_directory }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+
+- name: Create Jenkins systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/jenkins.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy Jenkins systemd override
+  ansible.builtin.template:
+    src: systemd/override.conf.j2
+    dest: /etc/systemd/system/jenkins.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Jenkins
+
+- name: Deploy JCasC templates
+  ansible.builtin.template:
+    src: "casc/{{ item }}"
+    dest: "{{ jenkins_casc_directory }}/{{ item | regex_replace('\\.j2$', '') }}"
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+  loop:
+    - 00-jenkins.yaml.j2
+    - 10-security.yaml.j2
+  notify:
+    - Restart Jenkins
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure Jenkins service is started
+  ansible.builtin.service:
+    name: "{{ jenkins_service_name }}"
+    state: started
+
+- name: Wait for Jenkins to become available
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ jenkins_http_port }}"
+    delay: 5
+    timeout: 120
