@@ -1,0 +1,10 @@
+---
+# ============================================================================
+# Jenkins Agent Role
+# ============================================================================
+
+- name: Configure Jenkins agent
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Verify Jenkins agent
+  ansible.builtin.import_tasks: verify.yml

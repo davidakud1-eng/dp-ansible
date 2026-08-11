@@ -12,3 +12,5 @@
   roles:
     - common
     - git
+    - java
+    - jenkins_agent

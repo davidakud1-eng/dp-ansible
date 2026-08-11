@@ -1,0 +1,12 @@
+---
+# ============================================================================
+# Jenkins Agent Configuration
+# ============================================================================
+
+- name: Create Jenkins agent working directory
+  ansible.builtin.file:
+    path: "{{ jenkins_agent_workdir }}"
+    state: directory
+    owner: "{{ jenkins_agent_user }}"
+    group: "{{ jenkins_agent_group }}"
+    mode: "0755"

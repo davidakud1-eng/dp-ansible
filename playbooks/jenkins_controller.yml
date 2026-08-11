@@ -1,5 +1,9 @@
 ---
-- name: Configure Jenkins Controller
+# ============================================================================
+# Jenkins Controller - Foundation
+# ============================================================================
+
+- name: Install Jenkins Controller Foundation
   hosts: jenkins
   remote_user: ec2-user
 
@@ -13,5 +17,63 @@
     - common
     - git
     - java
-    - jenkins
+
+  tasks:
+    - name: Install Jenkins foundation
+      ansible.builtin.include_role:
+        name: jenkins
+        tasks_from: install.yml
+
+
+# ============================================================================
+# Jenkins Controller - SSH Trust
+# ============================================================================
+
+- name: Configure Jenkins SSH Trust
+  hosts: jenkins
+  remote_user: ec2-user
+
+  become: true
+  become_method: sudo
+  become_flags: -n
+
+  gather_facts: false
+
+  roles:
     - jenkins_ssh
+
+
+# ============================================================================
+# Jenkins Controller - Platform Configuration
+# ============================================================================
+
+- name: Configure Jenkins Platform
+  hosts: jenkins
+  remote_user: ec2-user
+
+  become: true
+  become_method: sudo
+  become_flags: -n
+
+  gather_facts: false
+
+  tasks:
+    - name: Configure Jenkins service
+      ansible.builtin.include_role:
+        name: jenkins
+        tasks_from: configure.yml
+
+    - name: Install Jenkins plugins
+      ansible.builtin.include_role:
+        name: jenkins
+        tasks_from: plugin_manager.yml
+
+    - name: Configure Jenkins with JCasC
+      ansible.builtin.include_role:
+        name: jenkins
+        tasks_from: jcasc.yml
+
+    - name: Verify Jenkins
+      ansible.builtin.include_role:
+        name: jenkins
+        tasks_from: verify.yml

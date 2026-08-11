@@ -1,4 +1,8 @@
 ---
+# ============================================================================
+# Jenkins Configuration as Code
+# ============================================================================
+
 - name: Create JCasC directory
   ansible.builtin.file:
     path: "{{ jenkins_casc_directory }}"
@@ -32,10 +36,13 @@
     dest: "{{ jenkins_casc_directory }}/{{ item | regex_replace('\\.j2$', '') }}"
     owner: jenkins
     group: jenkins
-    mode: "0644"
+    mode: "0600"
   loop:
     - 00-jenkins.yaml.j2
     - 10-security.yaml.j2
+    - 20-credentials.yaml.j2
+    - 40-nodes.yaml.j2
+  no_log: true
   notify:
     - Restart Jenkins
 

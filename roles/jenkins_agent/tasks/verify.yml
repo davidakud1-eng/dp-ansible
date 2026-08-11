@@ -1,0 +1,23 @@
+---
+# ============================================================================
+# Jenkins Agent Verification
+# ============================================================================
+
+- name: Verify Java runtime
+  ansible.builtin.command:
+    cmd: java -version
+  register: jenkins_agent_java
+  changed_when: false
+
+- name: Verify Jenkins agent working directory
+  ansible.builtin.stat:
+    path: "{{ jenkins_agent_workdir }}"
+  register: jenkins_agent_workdir_status
+
+- name: Assert Jenkins agent is ready
+  ansible.builtin.assert:
+    that:
+      - jenkins_agent_workdir_status.stat.exists
+      - jenkins_agent_workdir_status.stat.isdir
+    success_msg: "Jenkins agent foundation is ready on {{ inventory_hostname }}"
+    fail_msg: "Jenkins agent foundation is not correctly configured on {{ inventory_hostname }}"

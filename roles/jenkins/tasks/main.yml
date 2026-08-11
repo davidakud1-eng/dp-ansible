@@ -3,10 +3,17 @@
 # Jenkins Role
 # ============================================================================
 
-- import_tasks: install.yml
+- name: Install Jenkins
+  ansible.builtin.import_tasks: install.yml
 
-- import_tasks: configure.yml
+- name: Configure Jenkins service
+  ansible.builtin.import_tasks: configure.yml
 
-- import_tasks: jcasc.yml
+- name: Install Jenkins plugins
+  ansible.builtin.import_tasks: plugin_manager.yml
 
-- import_tasks: verify.yml
+- name: Configure Jenkins with JCasC
+  ansible.builtin.import_tasks: jcasc.yml
+
+- name: Verify Jenkins
+  ansible.builtin.import_tasks: verify.yml

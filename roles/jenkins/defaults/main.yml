@@ -41,3 +41,15 @@ jenkins_system_message: |
   DP DevSecOps Platform
   Managed by Jenkins Configuration as Code (JCasC)
   ============================================================================
+
+# ============================================================================
+# Jenkins Plugin Installation Manager
+# ============================================================================
+
+jenkins_plugin_manager_version: "2.15.0"
+jenkins_plugin_manager_jar: /opt/jenkins-plugin-manager.jar
+
+jenkins_war: /usr/share/java/jenkins.war
+
+jenkins_plugins_file: /var/lib/jenkins/plugins.txt
+jenkins_plugins_directory: /var/lib/jenkins/plugins

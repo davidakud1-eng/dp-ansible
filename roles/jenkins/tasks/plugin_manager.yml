@@ -1,0 +1,49 @@
+---
+# ============================================================================
+# Jenkins Plugin Installation Manager
+# ============================================================================
+
+- name: Download Jenkins Plugin Installation Manager
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/{{ jenkins_plugin_manager_version }}/jenkins-plugin-manager-{{ jenkins_plugin_manager_version }}.jar
+    dest: "{{ jenkins_plugin_manager_jar }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy Jenkins plugin manifest
+  ansible.builtin.template:
+    src: plugins.txt.j2
+    dest: "{{ jenkins_plugins_file }}"
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+  register: jenkins_plugin_manifest
+
+- name: Ensure Jenkins plugins directory exists
+  ansible.builtin.file:
+    path: "{{ jenkins_plugins_directory }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+
+- name: Install Jenkins plugins
+  ansible.builtin.command:
+    cmd: >-
+      java -jar {{ jenkins_plugin_manager_jar }}
+      --war {{ jenkins_war }}
+      --plugin-file {{ jenkins_plugins_file }}
+      --plugin-download-directory {{ jenkins_plugins_directory }}
+  become_user: jenkins
+  register: jenkins_plugin_install
+  when: jenkins_plugin_manifest.changed
+  notify: Restart Jenkins
+
+- name: Ensure Jenkins plugin directory ownership
+  ansible.builtin.file:
+    path: "{{ jenkins_plugins_directory }}"
+    owner: jenkins
+    group: jenkins
+    recurse: true

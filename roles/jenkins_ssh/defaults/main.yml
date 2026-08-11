@@ -13,4 +13,3 @@ jenkins_private_key: "{{ jenkins_ssh_dir }}/id_ed25519"
 
 jenkins_public_key: "{{ jenkins_private_key }}.pub"
 
-jenkins_agent_user: ec2-user

@@ -1,0 +1,37 @@
+jenkins:
+  nodes:
+    - permanent:
+        name: "build-agent"
+        remoteFS: "{{ jenkins_agent_workdir }}"
+        numExecutors: 2
+        mode: EXCLUSIVE
+        labelString: "build-agent maven docker ci"
+        launcher:
+          ssh:
+            host: "{{ hostvars['build-agent'].private_ip }}"
+            port: 22
+            credentialsId: "dp-jenkins-agent-ssh"
+            javaPath: "/usr/bin/java"
+            launchTimeoutSeconds: 60
+            maxNumRetries: 3
+            retryWaitTime: 15
+            sshHostKeyVerificationStrategy:
+              knownHostsFileKeyVerificationStrategy: {}
+
+    - permanent:
+        name: "platform-ops"
+        remoteFS: "{{ jenkins_agent_workdir }}"
+        numExecutors: 1
+        mode: EXCLUSIVE
+        labelString: "platform-ops deployment infrastructure"
+        launcher:
+          ssh:
+            host: "{{ hostvars['platform-ops'].private_ip }}"
+            port: 22
+            credentialsId: "dp-jenkins-agent-ssh"
+            javaPath: "/usr/bin/java"
+            launchTimeoutSeconds: 60
+            maxNumRetries: 3
+            retryWaitTime: 15
+            sshHostKeyVerificationStrategy:
+              knownHostsFileKeyVerificationStrategy: {}

@@ -15,4 +15,4 @@
     - java
     - maven
     - docker
-    - build_agent
+    - jenkins_agent
