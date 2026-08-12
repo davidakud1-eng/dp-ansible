@@ -1,0 +1,20 @@
+---
+# ============================================================================
+# Helm Role Defaults
+# ============================================================================
+
+helm_version: "4.2.2"
+helm_arch: amd64
+
+helm_archive_name: "helm-v{{ helm_version }}-linux-{{ helm_arch }}.tar.gz"
+
+helm_download_url: >-
+  https://get.helm.sh/{{ helm_archive_name }}
+
+helm_checksum_url: >-
+  https://get.helm.sh/{{ helm_archive_name }}.sha256sum
+
+helm_archive_path: "/tmp/{{ helm_archive_name }}"
+helm_extract_path: /tmp/helm
+
+helm_install_path: /usr/local/bin/helm

@@ -1,0 +1,24 @@
+---
+# ============================================================================
+# Helm Verification
+# ============================================================================
+
+- name: Verify Helm installation
+  ansible.builtin.command:
+    cmd: "{{ helm_install_path }} version --short"
+  register: helm_version_output
+  changed_when: false
+
+- name: Verify Helm executable location
+  ansible.builtin.command:
+    cmd: which helm
+  register: helm_path_output
+  changed_when: false
+
+- name: Display Helm version
+  ansible.builtin.debug:
+    msg: "{{ helm_version_output.stdout }}"
+
+- name: Display Helm executable location
+  ansible.builtin.debug:
+    msg: "{{ helm_path_output.stdout }}"

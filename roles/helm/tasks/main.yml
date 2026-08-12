@@ -1,0 +1,10 @@
+---
+# ============================================================================
+# Helm Role Tasks
+# ============================================================================
+
+- name: Install Helm
+  ansible.builtin.import_tasks: install.yml
+
+- name: Verify Helm installation
+  ansible.builtin.import_tasks: verify.yml

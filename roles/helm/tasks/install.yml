@@ -1,0 +1,32 @@
+---
+# ============================================================================
+# Helm Installation
+# ============================================================================
+
+- name: Download Helm archive
+  ansible.builtin.get_url:
+    url: "{{ helm_download_url }}"
+    dest: "{{ helm_archive_path }}"
+    mode: "0644"
+    checksum: "sha256:{{ helm_checksum_url }}"
+
+- name: Create Helm extraction directory
+  ansible.builtin.file:
+    path: "{{ helm_extract_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Extract Helm archive
+  ansible.builtin.unarchive:
+    src: "{{ helm_archive_path }}"
+    dest: "{{ helm_extract_path }}"
+    remote_src: true
+
+- name: Install Helm binary
+  ansible.builtin.copy:
+    src: "{{ helm_extract_path }}/linux-{{ helm_arch }}/helm"
+    dest: "{{ helm_install_path }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
