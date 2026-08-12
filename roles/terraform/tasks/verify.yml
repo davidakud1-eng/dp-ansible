@@ -1,0 +1,24 @@
+---
+# ============================================================================
+# Verify Terraform
+# ============================================================================
+
+- name: Verify Terraform installation
+  ansible.builtin.command:
+    cmd: terraform version
+  register: terraform_cli_version
+  changed_when: false
+
+- name: Verify Terraform executable location
+  ansible.builtin.command:
+    cmd: which terraform
+  register: terraform_executable
+  changed_when: false
+
+- name: Display Terraform version
+  ansible.builtin.debug:
+    msg: "{{ terraform_cli_version.stdout_lines }}"
+
+- name: Display Terraform executable location
+  ansible.builtin.debug:
+    msg: "{{ terraform_executable.stdout }}"

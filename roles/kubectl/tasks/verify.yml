@@ -1,0 +1,24 @@
+---
+# ============================================================================
+# Verify kubectl
+# ============================================================================
+
+- name: Verify kubectl client version
+  ansible.builtin.command:
+    cmd: kubectl version --client
+  register: kubectl_client_version
+  changed_when: false
+
+- name: Verify kubectl executable location
+  ansible.builtin.command:
+    cmd: which kubectl
+  register: kubectl_executable
+  changed_when: false
+
+- name: Display kubectl client version
+  ansible.builtin.debug:
+    msg: "{{ kubectl_client_version.stdout_lines }}"
+
+- name: Display kubectl executable location
+  ansible.builtin.debug:
+    msg: "{{ kubectl_executable.stdout }}"

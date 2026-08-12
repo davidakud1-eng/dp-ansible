@@ -1,0 +1,14 @@
+---
+# ============================================================================
+# kubectl Role Defaults
+# ============================================================================
+
+kubectl_version: "1.35.3"
+kubectl_arch: amd64
+
+kubectl_download_url: >-
+  https://s3.us-west-2.amazonaws.com/amazon-eks/1.35.3/2026-04-08/bin/linux/{{ kubectl_arch }}/kubectl
+
+kubectl_checksum_url: "{{ kubectl_download_url }}.sha256"
+
+kubectl_install_path: /usr/local/bin/kubectl

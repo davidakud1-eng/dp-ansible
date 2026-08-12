@@ -1,0 +1,17 @@
+---
+# ============================================================================
+# Install Terraform
+# ============================================================================
+
+- name: Configure HashiCorp repository
+  ansible.builtin.get_url:
+    url: "{{ terraform_repository_url }}"
+    dest: "{{ terraform_repository_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install Terraform
+  ansible.builtin.dnf:
+    name: "{{ terraform_package_name }}-{{ terraform_version }}"
+    state: present

@@ -1,0 +1,14 @@
+---
+# ============================================================================
+# Verify Ansible
+# ============================================================================
+
+- name: Verify Ansible installation
+  ansible.builtin.command:
+    cmd: ansible --version
+  register: ansible_cli_version
+  changed_when: false
+
+- name: Display Ansible version
+  ansible.builtin.debug:
+    msg: "{{ ansible_cli_version.stdout_lines }}"

@@ -1,0 +1,29 @@
+---
+# ============================================================================
+# Install kubectl
+# ============================================================================
+
+- name: Download kubectl checksum
+  ansible.builtin.get_url:
+    url: "{{ kubectl_checksum_url }}"
+    dest: /tmp/kubectl.sha256
+    mode: "0644"
+
+- name: Read kubectl checksum
+  ansible.builtin.slurp:
+    src: /tmp/kubectl.sha256
+  register: kubectl_checksum_raw
+
+- name: Set kubectl checksum
+  ansible.builtin.set_fact:
+    kubectl_checksum: >-
+      {{ (kubectl_checksum_raw.content | b64decode).split()[0] }}
+
+- name: Download and verify kubectl
+  ansible.builtin.get_url:
+    url: "{{ kubectl_download_url }}"
+    dest: "{{ kubectl_install_path }}"
+    checksum: "sha256:{{ kubectl_checksum }}"
+    owner: root
+    group: root
+    mode: "0755"

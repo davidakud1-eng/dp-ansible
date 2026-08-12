@@ -1,0 +1,10 @@
+---
+# ============================================================================
+# Terraform Role
+# ============================================================================
+
+- name: Install Terraform
+  ansible.builtin.import_tasks: install.yml
+
+- name: Verify Terraform
+  ansible.builtin.import_tasks: verify.yml

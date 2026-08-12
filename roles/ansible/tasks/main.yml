@@ -1,0 +1,10 @@
+---
+# ============================================================================
+# Ansible Role
+# ============================================================================
+
+- name: Install Ansible
+  ansible.builtin.import_tasks: install.yml
+
+- name: Verify Ansible
+  ansible.builtin.import_tasks: verify.yml

@@ -14,3 +14,6 @@
     - git
     - java
     - jenkins_agent
+    - ansible
+    - terraform
+    - kubectl

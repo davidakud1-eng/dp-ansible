@@ -1,0 +1,10 @@
+---
+# ============================================================================
+# kubectl Role
+# ============================================================================
+
+- name: Install kubectl
+  ansible.builtin.import_tasks: install.yml
+
+- name: Verify kubectl
+  ansible.builtin.import_tasks: verify.yml

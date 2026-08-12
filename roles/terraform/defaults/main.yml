@@ -1,0 +1,10 @@
+---
+# ============================================================================
+# Terraform Role Defaults
+# ============================================================================
+
+terraform_version: "1.15.7"
+terraform_package_name: terraform
+
+terraform_repository_url: "https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo"
+terraform_repository_file: /etc/yum.repos.d/hashicorp.repo
