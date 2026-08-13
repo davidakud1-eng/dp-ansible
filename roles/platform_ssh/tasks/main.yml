@@ -1,0 +1,16 @@
+---
+# ============================================================================
+# Ansible SSH
+# ============================================================================
+
+- name: Create Ansible SSH identity
+  ansible.builtin.import_tasks: install.yml
+
+- name: Distribute Ansible SSH public key
+  ansible.builtin.import_tasks: distribute.yml
+
+- name: Configure Ansible known hosts
+  ansible.builtin.import_tasks: known_hosts.yml
+
+- name: Verify Ansible SSH connectivity
+  ansible.builtin.import_tasks: verify.yml

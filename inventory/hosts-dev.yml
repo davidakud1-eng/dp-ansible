@@ -1,0 +1,54 @@
+---
+# ============================================================================
+# DP DevSecOps Platform Inventory
+# Development Environment
+# Control Node: Local WSL
+# ============================================================================
+
+all:
+  vars:
+    ansible_user: ec2-user
+    ansible_ssh_private_key_file: /home/king_dayve/.ssh/dp-platform-keypair.pem
+    ansible_python_interpreter: /usr/bin/python3
+
+  children:
+
+    # ==========================================================================
+    # Jenkins Controller
+    # ==========================================================================
+
+    jenkins:
+      hosts:
+        jenkins-controller:
+          ansible_host: "{{ jenkins_controller_public_ip }}"
+          private_ip: "{{ jenkins_controller_private_ip }}"
+
+    # ==========================================================================
+    # Permanent Build Agent
+    # ==========================================================================
+
+    build_agents:
+      hosts:
+        build-agent:
+          ansible_host: "{{ build_agent_public_ip }}"
+          private_ip: "{{ build_agent_private_ip }}"
+
+    # ==========================================================================
+    # Platform Operations Server
+    # ==========================================================================
+
+    platform_ops:
+      hosts:
+        platform-ops:
+          ansible_host: "{{ platform_ops_public_ip }}"
+          private_ip: "{{ platform_ops_private_ip }}"
+
+    # ==========================================================================
+    # Entire Platform
+    # ==========================================================================
+
+    devsecops_platform:
+      children:
+        jenkins:
+        build_agents:
+        platform_ops:

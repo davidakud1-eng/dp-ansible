@@ -1,0 +1,28 @@
+---
+# ============================================================================
+# Ansible SSH Known Hosts
+# ============================================================================
+
+- name: Scan SSH host keys from managed hosts
+  ansible.builtin.command:
+    cmd: "ssh-keyscan -t ed25519 {{ hostvars[item].private_ip }}"
+  loop: "{{ groups['jenkins'] + groups['build_agents'] }}"
+  register: platform_ssh_managed_host_keys
+  changed_when: false
+
+- name: Add managed hosts to Ansible known_hosts
+  ansible.builtin.known_hosts:
+    path: "{{ platform_ssh_known_hosts }}"
+    name: "{{ hostvars[item.item].private_ip }}"
+    key: "{{ item.stdout }}"
+    state: present
+    hash_host: true
+  loop: "{{ platform_ssh_managed_host_keys.results }}"
+  when: item.stdout | length > 0
+
+- name: Set ownership and permissions on Ansible known_hosts
+  ansible.builtin.file:
+    path: "{{ platform_ssh_known_hosts }}"
+    owner: "{{ platform_ssh_user }}"
+    group: "{{ platform_ssh_user }}"
+    mode: "0600"

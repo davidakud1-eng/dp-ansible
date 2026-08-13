@@ -1,0 +1,27 @@
+---
+# ============================================================================
+# Read Platform Ops Ansible Public Key
+# ============================================================================
+
+- name: Read Ansible SSH public key
+  ansible.builtin.slurp:
+    src: "{{ platform_ssh_public_key }}"
+  register: platform_ssh_public_key_raw
+
+- name: Decode Ansible SSH public key
+  ansible.builtin.set_fact:
+    platform_ssh_public_key_content: >-
+      {{ platform_ssh_public_key_raw.content | b64decode | trim }}
+
+# ============================================================================
+# Configure Ansible SSH Trust on Managed Hosts
+# ============================================================================
+
+- name: Authorize Platform Ops Ansible public key on managed hosts
+  ansible.posix.authorized_key:
+    user: "{{ platform_ssh_user }}"
+    state: present
+    key: "{{ platform_ssh_public_key_content }}"
+    manage_dir: true
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['jenkins'] + groups['build_agents'] }}"

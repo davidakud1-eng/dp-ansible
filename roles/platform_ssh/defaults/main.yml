@@ -1,0 +1,16 @@
+---
+# ============================================================================
+# Platform Ops SSH
+# ============================================================================
+
+platform_ssh_user: ec2-user
+
+platform_ssh_home: "/home/{{ platform_ssh_user }}"
+
+platform_ssh_dir: "{{ platform_ssh_home }}/.ssh"
+
+platform_ssh_private_key: "{{ platform_ssh_dir }}/id_ed25519"
+
+platform_ssh_public_key: "{{ platform_ssh_private_key }}.pub"
+
+platform_ssh_known_hosts: "{{ platform_ssh_dir }}/known_hosts"

@@ -1,0 +1,26 @@
+---
+# ============================================================================
+# Verify Ansible SSH Connectivity
+# ============================================================================
+
+- name: Verify Ansible SSH connectivity to managed hosts
+  ansible.builtin.command:
+    cmd: >-
+      ssh
+      -i {{ platform_ssh_private_key }}
+      -o BatchMode=yes
+      -o StrictHostKeyChecking=yes
+      {{ platform_ssh_user }}@{{ hostvars[item].private_ip }}
+      "echo SSH_OK && hostname"
+  become_user: "{{ platform_ssh_user }}"
+  loop: "{{ groups['jenkins'] + groups['build_agents'] }}"
+  register: platform_ssh_verification
+  changed_when: false
+
+- name: Display Ansible SSH verification results
+  ansible.builtin.debug:
+    msg:
+      - "Host: {{ item.item }}"
+      - "Private IP: {{ hostvars[item.item].private_ip }}"
+      - "{{ item.stdout }}"
+  loop: "{{ platform_ssh_verification.results }}"

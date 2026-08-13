@@ -1,0 +1,27 @@
+---
+# ============================================================================
+# Ansible SSH Key Management
+# ============================================================================
+
+- name: Ensure Ansible SSH directory exists
+  ansible.builtin.file:
+    path: "{{ platform_ssh_dir }}"
+    state: directory
+    owner: "{{ platform_ssh_user }}"
+    group: "{{ platform_ssh_user }}"
+    mode: "0700"
+
+- name: Check whether Ansible SSH private key exists
+  ansible.builtin.stat:
+    path: "{{ platform_ssh_private_key }}"
+  register: platform_ssh_key
+
+- name: Generate Ansible Ed25519 SSH key
+  ansible.builtin.command:
+    cmd: >-
+      ssh-keygen
+      -t ed25519
+      -N ""
+      -f {{ platform_ssh_private_key }}
+  become_user: "{{ platform_ssh_user }}"
+  when: not platform_ssh_key.stat.exists
