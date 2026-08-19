@@ -41,6 +41,7 @@
     - 00-jenkins.yaml.j2
     - 10-security.yaml.j2
     - 20-credentials.yaml.j2
+    - 30-tools.yaml.j2
     - 40-nodes.yaml.j2
   no_log: true
   notify:
