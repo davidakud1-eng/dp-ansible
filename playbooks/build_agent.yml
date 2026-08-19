@@ -16,3 +16,4 @@
     - maven
     - docker
     - jenkins_agent
+    - trivy
