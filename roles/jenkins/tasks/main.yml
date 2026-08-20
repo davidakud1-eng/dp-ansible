@@ -15,5 +15,8 @@
 - name: Configure Jenkins with JCasC
   ansible.builtin.import_tasks: jcasc.yml
 
+- name: Provision Jenkins pipeline jobs
+  ansible.builtin.import_tasks: jobs.yml
+
 - name: Verify Jenkins
   ansible.builtin.import_tasks: verify.yml

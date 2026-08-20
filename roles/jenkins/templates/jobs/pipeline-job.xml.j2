@@ -1,0 +1,45 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job">
+  <actions/>
+  <description>DP pipeline job for {{ item.name }} - managed by Ansible</description>
+  <keepDependencies>false</keepDependencies>
+
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <com.cloudbees.jenkins.GitHubPushTrigger plugin="github">
+          <spec></spec>
+        </com.cloudbees.jenkins.GitHubPushTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git">
+      <configVersion>2</configVersion>
+
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>{{ item.repository_url }}</url>
+          <credentialsId>{{ jenkins_pipeline_credentials_id }}</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>{{ jenkins_pipeline_branch }}</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions/>
+    </scm>
+
+    <scriptPath>{{ jenkins_pipeline_script_path }}</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

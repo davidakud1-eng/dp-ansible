@@ -1,0 +1,66 @@
+---
+# ============================================================================
+# Jenkins Pipeline Job Provisioning
+# ============================================================================
+
+- name: Create temporary Jenkins job configuration files
+  ansible.builtin.template:
+    src: jobs/pipeline-job.xml.j2
+    dest: "/tmp/{{ item.name }}-config.xml"
+    owner: root
+    group: root
+    mode: "0600"
+  loop: "{{ jenkins_pipeline_jobs }}"
+  no_log: true
+
+- name: Check whether Jenkins pipeline jobs exist
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ jenkins_http_port }}/job/{{ item.name }}/api/json"
+    user: "{{ jenkins_admin_username }}"
+    password: "{{ jenkins_admin_password }}"
+    force_basic_auth: true
+    status_code:
+      - 200
+      - 404
+  loop: "{{ jenkins_pipeline_jobs }}"
+  register: jenkins_job_status
+  no_log: true
+
+- name: Create missing Jenkins pipeline jobs
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ jenkins_http_port }}/createItem?name={{ item.item.name | urlencode }}"
+    method: POST
+    user: "{{ jenkins_admin_username }}"
+    password: "{{ jenkins_admin_password }}"
+    force_basic_auth: true
+    src: "/tmp/{{ item.item.name }}-config.xml"
+    remote_src: true
+    headers:
+      Content-Type: "application/xml"
+    status_code: 200
+  loop: "{{ jenkins_job_status.results }}"
+  when: item.status == 404
+  no_log: true
+
+- name: Update existing Jenkins pipeline jobs
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ jenkins_http_port }}/job/{{ item.item.name }}/config.xml"
+    method: POST
+    user: "{{ jenkins_admin_username }}"
+    password: "{{ jenkins_admin_password }}"
+    force_basic_auth: true
+    src: "/tmp/{{ item.item.name }}-config.xml"
+    remote_src: true
+    headers:
+      Content-Type: "application/xml"
+    status_code: 200
+  loop: "{{ jenkins_job_status.results }}"
+  when: item.status == 200
+  no_log: true
+
+- name: Remove temporary Jenkins job configuration files
+  ansible.builtin.file:
+    path: "/tmp/{{ item.name }}-config.xml"
+    state: absent
+  loop: "{{ jenkins_pipeline_jobs }}"
+  no_log: true

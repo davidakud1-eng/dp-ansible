@@ -53,3 +53,20 @@ jenkins_war: /usr/share/java/jenkins.war
 
 jenkins_plugins_file: /var/lib/jenkins/plugins.txt
 jenkins_plugins_directory: /var/lib/jenkins/plugins
+# ============================================================================
+# Jenkins Pipeline Jobs
+# ============================================================================
+
+jenkins_pipeline_credentials_id: "github-token"
+jenkins_pipeline_branch: "*/main"
+jenkins_pipeline_script_path: "Jenkinsfile"
+
+jenkins_pipeline_jobs:
+  - name: "dp-mywebapp"
+    repository_url: "https://github.com/davidakud1-eng/dp-mywebapp.git"
+
+  - name: "dp-ansible"
+    repository_url: "https://github.com/davidakud1-eng/dp-ansible.git"
+
+  - name: "dp-platform-infra"
+    repository_url: "https://github.com/davidakud1-eng/dp-platform-infra.git"
