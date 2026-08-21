@@ -13,11 +13,15 @@
   loop: "{{ jenkins_pipeline_jobs }}"
   no_log: true
 
+# ============================================================================
+# Discover Existing Jenkins Jobs
+# ============================================================================
+
 - name: Check whether Jenkins pipeline jobs exist
   ansible.builtin.uri:
     url: "http://127.0.0.1:{{ jenkins_http_port }}/job/{{ item.name }}/api/json"
     user: "{{ jenkins_admin_username }}"
-    password: "{{ jenkins_admin_password }}"
+    password: "{{ jenkins_api_token }}"
     force_basic_auth: true
     status_code:
       - 200
@@ -26,37 +30,72 @@
   register: jenkins_job_status
   no_log: true
 
-- name: Create missing Jenkins pipeline jobs
+# ============================================================================
+# Jenkins CSRF Protection
+# ============================================================================
+
+- name: Get Jenkins CSRF crumb
   ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ jenkins_http_port }}/createItem?name={{ item.item.name | urlencode }}"
-    method: POST
+    url: "http://127.0.0.1:{{ jenkins_http_port }}/crumbIssuer/api/json"
     user: "{{ jenkins_admin_username }}"
-    password: "{{ jenkins_admin_password }}"
+    password: "{{ jenkins_api_token }}"
     force_basic_auth: true
-    src: "/tmp/{{ item.item.name }}-config.xml"
-    remote_src: true
-    headers:
-      Content-Type: "application/xml"
+    return_content: true
     status_code: 200
+  register: jenkins_crumb
+  no_log: true
+
+# ============================================================================
+# Create Missing Jenkins Jobs
+# ============================================================================
+
+- name: Create missing Jenkins pipeline jobs
+  ansible.builtin.command:
+    argv:
+      - curl
+      - --fail
+      - --silent
+      - --show-error
+      - --user
+      - "{{ jenkins_admin_username }}:{{ jenkins_api_token }}"
+      - --header
+      - "{{ jenkins_crumb.json.crumbRequestField }}: {{ jenkins_crumb.json.crumb }}"
+      - --header
+      - "Content-Type: application/xml"
+      - --data-binary
+      - "@/tmp/{{ item.item.name }}-config.xml"
+      - "http://127.0.0.1:{{ jenkins_http_port }}/createItem?name={{ item.item.name }}"
   loop: "{{ jenkins_job_status.results }}"
   when: item.status == 404
   no_log: true
 
+# ============================================================================
+# Update Existing Jenkins Jobs
+# ============================================================================
+
 - name: Update existing Jenkins pipeline jobs
-  ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ jenkins_http_port }}/job/{{ item.item.name }}/config.xml"
-    method: POST
-    user: "{{ jenkins_admin_username }}"
-    password: "{{ jenkins_admin_password }}"
-    force_basic_auth: true
-    src: "/tmp/{{ item.item.name }}-config.xml"
-    remote_src: true
-    headers:
-      Content-Type: "application/xml"
-    status_code: 200
+  ansible.builtin.command:
+    argv:
+      - curl
+      - --fail
+      - --silent
+      - --show-error
+      - --user
+      - "{{ jenkins_admin_username }}:{{ jenkins_api_token }}"
+      - --header
+      - "{{ jenkins_crumb.json.crumbRequestField }}: {{ jenkins_crumb.json.crumb }}"
+      - --header
+      - "Content-Type: application/xml"
+      - --data-binary
+      - "@/tmp/{{ item.item.name }}-config.xml"
+      - "http://127.0.0.1:{{ jenkins_http_port }}/job/{{ item.item.name }}/config.xml"
   loop: "{{ jenkins_job_status.results }}"
   when: item.status == 200
   no_log: true
+
+# ============================================================================
+# Cleanup
+# ============================================================================
 
 - name: Remove temporary Jenkins job configuration files
   ansible.builtin.file:

@@ -31,7 +31,6 @@ collections/
 
 # Real encrypted project secrets
 # Commit vault.yml.example instead
-inventory/group_vars/all/vault.yml
 
 # ============================================================================
 # Terraform

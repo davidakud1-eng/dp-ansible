@@ -73,6 +73,11 @@
         name: jenkins
         tasks_from: jcasc.yml
 
+    - name: Provision Jenkins pipeline jobs
+      ansible.builtin.include_role:
+        name: jenkins
+        tasks_from: jobs.yml
+
     - name: Verify Jenkins
       ansible.builtin.include_role:
         name: jenkins

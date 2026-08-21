@@ -33,8 +33,9 @@ jenkins_admin_username: kingdayve
 jenkins_admin_full_name: David Aku
 
 jenkins_admin_password: "{{ vault_jenkins_admin_password }}"
+jenkins_api_token: "{{ vault_jenkins_api_token }}"
 
-jenkins_url: "http://3.147.63.167:8080/"
+jenkins_url: "http://{{ jenkins_controller_public_ip }}:{{ jenkins_http_port }}/"
 
 jenkins_system_message: |
   ============================================================================
