@@ -1,4 +1,14 @@
+---
+# ============================================================================
+# Jenkins Global / Tool Configuration
+# ============================================================================
+
 unclassified:
+
+  # ==========================================================================
+  # SonarCloud
+  # ==========================================================================
+
   sonarGlobalConfiguration:
     installations:
       - name: "DP-SonarCloud"
@@ -7,3 +17,24 @@ unclassified:
         triggers:
           skipScmCause: false
           skipUpstreamCause: false
+
+# ============================================================================
+# Jenkins Tools
+# ============================================================================
+
+tool:
+
+  # ==========================================================================
+  # Snyk CLI
+  # ==========================================================================
+
+  snyk:
+    installations:
+      - name: "DP-Snyk"
+        properties:
+          - installSource:
+              installers:
+                - snykInstaller:
+                    platform: AUTO
+                    updatePolicyIntervalHours: 24
+                    version: "latest"
