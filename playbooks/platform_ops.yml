@@ -1,4 +1,8 @@
 ---
+# ============================================================================
+# DP Platform Operations Server
+# ============================================================================
+
 - name: Configure Platform Operations Server
   hosts: platform_ops
   remote_user: ec2-user
@@ -18,6 +22,11 @@
     - terraform
     - kubectl
     - helm
+
+    - role: node_exporter
+      tags:
+        - node_exporter
+
     - role: platform_ssh
       tags:
-         - platform_ssh
+        - platform_ssh

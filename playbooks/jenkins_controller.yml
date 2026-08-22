@@ -18,6 +18,10 @@
     - git
     - java
 
+    - role: node_exporter
+      tags:
+        - node_exporter
+
   tasks:
     - name: Install Jenkins foundation
       ansible.builtin.include_role:

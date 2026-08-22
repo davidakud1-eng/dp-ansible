@@ -1,4 +1,8 @@
 ---
+# ============================================================================
+# DP Jenkins Permanent Build Agent
+# ============================================================================
+
 - name: Configure Build Agent
   hosts: build_agents
   remote_user: ec2-user
@@ -17,3 +21,7 @@
     - docker
     - jenkins_agent
     - trivy
+
+    - role: node_exporter
+      tags:
+        - node_exporter
