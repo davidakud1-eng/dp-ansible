@@ -1,0 +1,141 @@
+---
+# ============================================================================
+# DP JFrog Artifactory OSS
+# ============================================================================
+
+# ============================================================================
+# Persistent Storage
+# ============================================================================
+
+- name: Create Artifactory persistent data directory
+  ansible.builtin.file:
+    path: "{{ artifactory_data_dir }}"
+    state: directory
+    owner: "{{ artifactory_uid }}"
+    group: "{{ artifactory_gid }}"
+    mode: "0755"
+
+- name: Create Artifactory configuration directory
+  ansible.builtin.file:
+    path: "{{ artifactory_data_dir }}/etc"
+    state: directory
+    owner: "{{ artifactory_uid }}"
+    group: "{{ artifactory_gid }}"
+    mode: "0755"
+
+# ============================================================================
+# Artifactory Configuration
+# ============================================================================
+
+- name: Configure Artifactory system.yaml
+  ansible.builtin.copy:
+    dest: "{{ artifactory_data_dir }}/etc/system.yaml"
+    owner: "{{ artifactory_uid }}"
+    group: "{{ artifactory_gid }}"
+    mode: "0644"
+    content: |
+      shared:
+          database:
+              allowNonPostgresql: true
+  register: artifactory_system_config
+
+
+# ============================================================================
+# Docker Image
+# ============================================================================
+
+- name: Pull Artifactory Docker image
+  ansible.builtin.command:
+    cmd: "docker pull {{ artifactory_image }}"
+  register: artifactory_pull
+  changed_when: "'Downloaded newer image' in artifactory_pull.stdout"
+
+# ============================================================================
+# Container Discovery
+# ============================================================================
+
+- name: Check whether Artifactory container exists
+  ansible.builtin.command:
+    cmd: "docker inspect {{ artifactory_container_name }}"
+  register: artifactory_container
+  changed_when: false
+  failed_when: false
+
+# ============================================================================
+# Container Creation
+# ============================================================================
+
+- name: Create and start Artifactory container
+  ansible.builtin.command: >
+    docker run
+    --detach
+    --name {{ artifactory_container_name }}
+    --restart unless-stopped
+    --publish {{ artifactory_service_port }}:8081
+    --publish {{ artifactory_router_port }}:8082
+    --volume {{ artifactory_data_dir }}:/var/opt/jfrog/artifactory
+    {{ artifactory_image }}
+  when: artifactory_container.rc != 0
+
+# ============================================================================
+# Restart Existing Container When Configuration Changes
+# ============================================================================
+
+- name: Restart Artifactory when system.yaml changes
+  ansible.builtin.command:
+    cmd: "docker restart {{ artifactory_container_name }}"
+  when:
+    - artifactory_container.rc == 0
+    - artifactory_system_config.changed
+
+# ============================================================================
+# Ensure Existing Container Is Running
+# ============================================================================
+
+- name: Check Artifactory container running state
+  ansible.builtin.command:
+    cmd: >
+      docker inspect
+      -f {% raw %}'{{.State.Running}}'{% endraw %}
+      {{ artifactory_container_name }}
+  register: artifactory_running
+  changed_when: false
+  when: artifactory_container.rc == 0
+
+- name: Start Artifactory container if stopped
+  ansible.builtin.command:
+    cmd: "docker start {{ artifactory_container_name }}"
+  when:
+    - artifactory_container.rc == 0
+    - artifactory_running.stdout | trim != "true"
+
+# ============================================================================
+# Startup Verification
+# ============================================================================
+
+- name: Wait for Artifactory router port
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ artifactory_router_port }}"
+    delay: 10
+    timeout: 300
+
+- name: Verify Artifactory container is running
+  ansible.builtin.command:
+    cmd: >
+      docker inspect
+      -f {% raw %}'{{.State.Status}}'{% endraw %}
+      {{ artifactory_container_name }}
+  register: artifactory_status
+  changed_when: false
+
+- name: Display Artifactory container status
+  ansible.builtin.debug:
+    msg: "Artifactory container status: {{ artifactory_status.stdout }}"
+
+# ============================================================================
+# Administrator Bootstrap
+# ============================================================================
+
+- name: Bootstrap Artifactory administrator
+  ansible.builtin.import_tasks: bootstrap.yml

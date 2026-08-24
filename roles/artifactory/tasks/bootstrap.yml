@@ -1,0 +1,96 @@
+---
+# ============================================================================
+# DP JFrog Artifactory - Administrator Bootstrap
+# ============================================================================
+
+# ============================================================================
+# Determine Whether Administrator Is Already Configured
+# ============================================================================
+
+- name: Check existing Artifactory administrator authentication
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ artifactory_router_port }}/artifactory/api/system/version"
+    method: GET
+    user: "{{ jfrog_admin_username }}"
+    password: "{{ vault_jfrog_admin_password }}"
+    force_basic_auth: true
+    status_code:
+      - 200
+      - 401
+      - 403
+    return_content: false
+  register: artifactory_admin_check
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+# ============================================================================
+# Bootstrap Administrator Only When Required
+# ============================================================================
+
+- name: Bootstrap Artifactory administrator
+  when: artifactory_admin_check.status | default(0) != 200
+  block:
+
+    - name: Ensure Artifactory Access configuration directory exists
+      ansible.builtin.file:
+        path: "{{ artifactory_data_dir }}/etc/access"
+        state: directory
+        owner: "{{ artifactory_uid }}"
+        group: "{{ artifactory_gid }}"
+        mode: "0755"
+
+    - name: Configure Artifactory administrator bootstrap credentials
+      ansible.builtin.copy:
+        dest: "{{ artifactory_data_dir }}/etc/access/bootstrap.creds"
+        content: "{{ jfrog_admin_username }}@*={{ vault_jfrog_admin_password }}\n"
+        owner: "{{ artifactory_uid }}"
+        group: "{{ artifactory_gid }}"
+        mode: "0600"
+      no_log: true
+
+    - name: Restart Artifactory after administrator bootstrap configuration
+      ansible.builtin.command:
+        cmd: "docker restart {{ artifactory_container_name }}"
+
+    - name: Wait for Artifactory router port after bootstrap
+      ansible.builtin.wait_for:
+        host: "127.0.0.1"
+        port: "{{ artifactory_router_port }}"
+        delay: 10
+        timeout: 300
+
+    - name: Wait for Artifactory administrator authentication
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ artifactory_router_port }}/artifactory/api/system/version"
+        method: GET
+        user: "{{ jfrog_admin_username }}"
+        password: "{{ vault_jfrog_admin_password }}"
+        force_basic_auth: true
+        status_code: 200
+        return_content: false
+      register: artifactory_authenticated_api
+      retries: 30
+      delay: 10
+      until: artifactory_authenticated_api.status == 200
+      no_log: true
+
+# ============================================================================
+# Verification
+# ============================================================================
+
+- name: Verify Artifactory administrator authentication
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ artifactory_router_port }}/artifactory/api/system/version"
+    method: GET
+    user: "{{ jfrog_admin_username }}"
+    password: "{{ vault_jfrog_admin_password }}"
+    force_basic_auth: true
+    status_code: 200
+    return_content: false
+  changed_when: false
+  no_log: true
+
+- name: Confirm Artifactory administrator authentication
+  ansible.builtin.debug:
+    msg: "Artifactory administrator authentication successful for {{ jfrog_admin_username }}."

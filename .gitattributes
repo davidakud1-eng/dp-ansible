@@ -1,0 +1,7 @@
+# DP repository line-ending policy
+* text=auto
+
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.j2   text eol=lf
+*.sh   text eol=lf

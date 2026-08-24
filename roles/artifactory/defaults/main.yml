@@ -1,0 +1,25 @@
+---
+# ============================================================================
+# DP JFrog Artifactory OSS - Defaults
+# ============================================================================
+
+artifactory_version: "7.161.15"
+
+artifactory_image: "releases-docker.jfrog.io/jfrog/artifactory-oss:{{ artifactory_version }}"
+
+artifactory_container_name: "dp-artifactory"
+
+artifactory_home: "/opt/jfrog"
+artifactory_data_dir: "{{ artifactory_home }}/artifactory/var"
+
+artifactory_uid: "1030"
+artifactory_gid: "1030"
+
+artifactory_router_port: 8082
+artifactory_service_port: 8081
+
+# ============================================================================
+# Artifactory Administration
+# ============================================================================
+
+jfrog_admin_username: "kingdayve"

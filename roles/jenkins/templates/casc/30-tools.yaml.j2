@@ -18,6 +18,19 @@ unclassified:
           skipScmCause: false
           skipUpstreamCause: false
 
+  # ==========================================================================
+  # JFrog Platform
+  # ==========================================================================
+
+  jFrogPlatformBuilder:
+    allowHttpConnections: true
+    jfrogInstances:
+      - serverId: "DP-Artifactory"
+        url: "http://{{ platform_ops_private_ip }}:{{ artifactory_router_port }}"
+        artifactoryUrl: "http://{{ platform_ops_private_ip }}:{{ artifactory_router_port }}/artifactory"
+        credentialsConfig:
+          credentialsId: "artifactory-token"
+
 # ============================================================================
 # Jenkins Tools
 # ============================================================================
@@ -38,3 +51,15 @@ tool:
                     platform: AUTO
                     updatePolicyIntervalHours: 24
                     version: "latest"
+
+  # ==========================================================================
+  # JFrog CLI
+  # ==========================================================================
+
+  jfrog:
+    installations:
+      - name: "DP-JFrog-CLI"
+        properties:
+          - installSource:
+              installers:
+                - "releasesInstaller"
