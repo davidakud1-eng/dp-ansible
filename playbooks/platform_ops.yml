@@ -22,6 +22,9 @@
     - terraform
     - kubectl
     - helm
+    - role: aws_load_balancer_controller
+      tags:
+        - aws_load_balancer_controller
 
     - role: docker
       tags:

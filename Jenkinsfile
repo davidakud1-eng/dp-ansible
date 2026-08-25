@@ -7,17 +7,42 @@ pipeline {
     }
 
     environment {
+        // ================================================================
+        // Ansible Configuration
+        // ================================================================
+
         ANSIBLE_CONFIG = "${WORKSPACE}/ansible.cfg"
         ANSIBLE_INVENTORY = "${WORKSPACE}/inventory/hosts-prod.yml"
+
+        // ================================================================
+        // EKS Runtime Configuration
+        //
+        // Overrides the safe Ansible role default:
+        //
+        // eks_runtime_enabled: false
+        //
+        // When true, EKS-dependent platform components such as the
+        // AWS Load Balancer Controller are allowed to deploy.
+        // ================================================================
+
+        EKS_RUNTIME_ENABLED = 'false'
     }
 
     stages {
+
+        // ==================================================================
+        // Checkout
+        // ==================================================================
 
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
+
+        // ==================================================================
+        // Verify Ansible
+        // ==================================================================
 
         stage('Verify Ansible') {
             steps {
@@ -27,6 +52,10 @@ pipeline {
                 '''
             }
         }
+
+        // ==================================================================
+        // Syntax Check
+        // ==================================================================
 
         stage('Syntax Check') {
             steps {
@@ -46,6 +75,7 @@ pipeline {
                           -i "$ANSIBLE_INVENTORY" \
                           playbooks/site.yml \
                           --vault-password-file .vault-pass \
+                          --extra-vars "eks_runtime_enabled=$EKS_RUNTIME_ENABLED" \
                           --syntax-check
 
                         rm -f .vault-pass
@@ -53,6 +83,10 @@ pipeline {
                 }
             }
         }
+
+        // ==================================================================
+        // Deploy DP Platform
+        // ==================================================================
 
         stage('Deploy DP Platform') {
             steps {
@@ -71,7 +105,8 @@ pipeline {
                         ansible-playbook \
                           -i "$ANSIBLE_INVENTORY" \
                           playbooks/site.yml \
-                          --vault-password-file .vault-pass
+                          --vault-password-file .vault-pass \
+                          --extra-vars "eks_runtime_enabled=$EKS_RUNTIME_ENABLED"
 
                         rm -f .vault-pass
                     '''
@@ -81,11 +116,20 @@ pipeline {
     }
 
     post {
+
+        // ==================================================================
+        // Cleanup
+        // ==================================================================
+
         always {
             sh '''
                 rm -f .vault-pass
             '''
         }
+
+        // ==================================================================
+        // Pipeline Result
+        // ==================================================================
 
         success {
             echo 'DP platform configuration completed successfully.'

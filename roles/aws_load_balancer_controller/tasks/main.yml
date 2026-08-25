@@ -1,0 +1,58 @@
+---
+# ============================================================================
+# DP AWS Load Balancer Controller
+# Installs the controller into EKS using Helm
+# ============================================================================
+
+- name: Manage AWS Load Balancer Controller
+  when: eks_runtime_enabled | bool
+  block:
+
+    # ==========================================================================
+    # Add AWS EKS Helm Repository
+    # ==========================================================================
+
+    - name: Add AWS EKS Helm repository
+      become: false
+      ansible.builtin.command:
+        cmd: >
+          helm repo add
+          {{ aws_lbc_helm_repo_name }}
+          {{ aws_lbc_helm_repo_url }}
+          --force-update
+      register: aws_lbc_helm_repo_add
+      changed_when: >
+        'has been added' in aws_lbc_helm_repo_add.stdout
+
+    # ==========================================================================
+    # Update Helm Repository Cache
+    # ==========================================================================
+
+    - name: Update Helm repository cache
+      become: false
+      ansible.builtin.command:
+        cmd: helm repo update
+      changed_when: false
+
+    # ==========================================================================
+    # Install or Upgrade AWS Load Balancer Controller
+    # ==========================================================================
+
+    - name: Install or upgrade AWS Load Balancer Controller
+      become: false
+      ansible.builtin.command:
+        cmd: >
+          helm upgrade --install
+          {{ aws_lbc_release_name }}
+          {{ aws_lbc_chart_name }}
+          --namespace {{ aws_lbc_namespace }}
+          --version {{ aws_lbc_chart_version }}
+          --set clusterName={{ aws_lbc_cluster_name }}
+          --set serviceAccount.create=true
+          --set serviceAccount.name={{ aws_lbc_service_account_name }}
+          --set replicaCount={{ aws_lbc_replica_count }}
+          --wait
+          --timeout 5m
+      register: aws_lbc_helm_install
+      changed_when: >
+        'STATUS: deployed' in aws_lbc_helm_install.stdout

@@ -71,3 +71,10 @@ jenkins_pipeline_jobs:
 
   - name: "dp-platform-infra"
     repository_url: "https://github.com/davidakud1-eng/dp-platform-infra.git"
+
+# ============================================================================
+# Docker Hub
+# ============================================================================
+
+dockerhub_username: "kingdayve"
+dockerhub_credentials_id: "dockerhub-credentials"
