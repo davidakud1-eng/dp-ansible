@@ -11,3 +11,5 @@
 jenkins_agent_user: ec2-user
 jenkins_agent_root: /opt/jenkins
 jenkins_agent_workdir: /opt/jenkins
+
+eks_runtime_enabled: false

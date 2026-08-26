@@ -1,0 +1,141 @@
+# ============================================================================
+# DP kube-prometheus-stack Values
+# ============================================================================
+
+# ============================================================================
+# Grafana
+# ============================================================================
+
+grafana:
+  enabled: {{ kps_grafana_enabled | lower }}
+
+  service:
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+
+# ============================================================================
+# Alertmanager
+# ============================================================================
+
+alertmanager:
+  enabled: {{ kps_alertmanager_enabled | lower }}
+
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+
+# ============================================================================
+# Prometheus
+# ============================================================================
+
+prometheus:
+  prometheusSpec:
+
+    # ========================================================================
+    # Data Retention
+    # ========================================================================
+
+    retention: {{ kps_prometheus_retention }}
+
+    # ========================================================================
+    # Resource Management
+    # ========================================================================
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    # ========================================================================
+    # Persistent Storage
+    # ========================================================================
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: {{ kps_prometheus_storage_size }}
+
+    # ========================================================================
+    # Additional Scrape Configuration
+    # ========================================================================
+
+    additionalScrapeConfigs:
+
+      # ======================================================================
+      # DP EC2 Host Metrics - Node Exporter
+      #
+      # Node Exporter runs directly on the DP EC2 instances.
+      # Prometheus scrapes each exporter over the private VPC network.
+      # ======================================================================
+
+      - job_name: dp-ec2-node-exporters
+
+        metrics_path: /metrics
+
+        static_configs:
+          - targets:
+              - "{{ jenkins_controller_private_ip }}:9100"
+              - "{{ build_agent_private_ip }}:9100"
+              - "{{ platform_ops_private_ip }}:9100"
+
+            labels:
+              environment: dp-platform
+
+      # ======================================================================
+      # DP Jenkins Application Metrics - Jenkins Prometheus Plugin
+      #
+      # The Jenkins Prometheus plugin exposes Jenkins-specific metrics at
+      # /prometheus/ on the Jenkins controller.
+      # ======================================================================
+
+      - job_name: dp-jenkins
+
+        metrics_path: /prometheus/
+
+        static_configs:
+          - targets:
+              - "{{ jenkins_controller_private_ip }}:8080"
+
+            labels:
+              application: jenkins
+              environment: dp-platform
+
+
+# ============================================================================
+# Kubernetes State Metrics
+# ============================================================================
+
+kube-state-metrics:
+  enabled: {{ kps_kube_state_metrics_enabled | lower }}
+
+
+# ============================================================================
+# Kubernetes Node Exporter
+#
+# This is separate from the Node Exporter installations on our standalone
+# EC2 platform servers. These exporters monitor the EKS worker nodes.
+# ============================================================================
+
+prometheus-node-exporter:
+  enabled: {{ kps_node_exporter_enabled | lower }}

@@ -14,29 +14,73 @@
   gather_facts: true
 
   roles:
+
+    # ========================================================================
+    # Base OS / Runtime
+    # ========================================================================
+
     - common
     - git
     - java
+
+    # ========================================================================
+    # Jenkins Execution
+    # ========================================================================
+
     - jenkins_agent
+
+    # ========================================================================
+    # Platform Engineering Tooling
+    # ========================================================================
+
     - ansible
     - terraform
     - kubectl
     - helm
-    - role: aws_load_balancer_controller
-      tags:
-        - aws_load_balancer_controller
 
     - role: docker
       tags:
         - docker
 
+    # ========================================================================
+    # EKS Platform Components
+    #
+    # These depend on:
+    #   - kubectl
+    #   - Helm
+    #   - EKS runtime being available
+    #
+    # Deployment is controlled by:
+    #   eks_runtime_enabled
+    # ========================================================================
+
+    - role: aws_load_balancer_controller
+      tags:
+        - aws_load_balancer_controller
+
+    - role: kube_prometheus_stack
+      tags:
+        - kube_prometheus_stack
+
+    # ========================================================================
+    # Artifact Management
+    # ========================================================================
+
     - role: artifactory
       tags:
         - artifactory
 
+    # ========================================================================
+    # Host Monitoring
+    # ========================================================================
+
     - role: node_exporter
       tags:
         - node_exporter
+
+    # ========================================================================
+    # Platform Connectivity
+    # ========================================================================
 
     - role: platform_ssh
       tags:

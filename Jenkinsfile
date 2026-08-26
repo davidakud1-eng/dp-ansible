@@ -22,7 +22,8 @@ pipeline {
         // eks_runtime_enabled: false
         //
         // When true, EKS-dependent platform components such as the
-        // AWS Load Balancer Controller are allowed to deploy.
+        // AWS Load Balancer Controller and kube-prometheus-stack
+        // are allowed to deploy.
         // ================================================================
 
         EKS_RUNTIME_ENABLED = 'false'

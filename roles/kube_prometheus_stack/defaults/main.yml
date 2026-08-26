@@ -1,0 +1,39 @@
+---
+# ============================================================================
+# DP kube-prometheus-stack
+# ============================================================================
+
+# ============================================================================
+# Runtime Control
+# ============================================================================
+
+eks_runtime_enabled: false
+
+# ============================================================================
+# Helm Repository
+# ============================================================================
+
+kps_helm_repo_name: prometheus-community
+kps_helm_repo_url: https://prometheus-community.github.io/helm-charts
+
+# ============================================================================
+# Helm Release
+# ============================================================================
+
+kps_release_name: kube-prometheus-stack
+kps_chart_name: prometheus-community/kube-prometheus-stack
+kps_namespace: monitoring
+
+# ============================================================================
+# Resource Sizing
+# Cost-conscious portfolio configuration
+# ============================================================================
+
+kps_prometheus_retention: 3d
+
+kps_prometheus_storage_size: 5Gi
+
+kps_grafana_enabled: true
+kps_alertmanager_enabled: true
+kps_kube_state_metrics_enabled: true
+kps_node_exporter_enabled: true
