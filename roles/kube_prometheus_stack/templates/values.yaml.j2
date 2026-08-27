@@ -65,11 +65,15 @@ prometheus:
 
     # ========================================================================
     # Persistent Storage
+    #
+    # The StorageClass is specified explicitly because the DP EKS cluster
+    # does not currently define a default StorageClass.
     # ========================================================================
 
     storageSpec:
       volumeClaimTemplate:
         spec:
+          storageClassName: {{ kps_prometheus_storage_class }}
           accessModes:
             - ReadWriteOnce
           resources:

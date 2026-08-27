@@ -32,6 +32,7 @@ kps_namespace: monitoring
 kps_prometheus_retention: 3d
 
 kps_prometheus_storage_size: 5Gi
+kps_prometheus_storage_class: gp2
 
 kps_grafana_enabled: true
 kps_alertmanager_enabled: true
