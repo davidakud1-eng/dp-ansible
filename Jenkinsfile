@@ -11,13 +11,8 @@ pipeline {
         // ================================================================
         // EKS Runtime Control
         //
-        // Disabled by default so normal Ansible runs do not attempt to
-        // configure EKS-dependent platform components when the ephemeral
-        // EKS runtime does not exist.
-        //
-        // When enabled, EKS-dependent components such as the AWS Load
-        // Balancer Controller and kube-prometheus-stack are allowed
-        // to deploy.
+        // Must be enabled for the AWS Load Balancer Controller role
+        // to execute.
         // ================================================================
 
         booleanParam(
@@ -68,9 +63,6 @@ pipeline {
 
         // ==================================================================
         // Display Runtime Configuration
-        //
-        // Makes the selected EKS runtime state visible in the Jenkins
-        // console before validation or deployment begins.
         // ==================================================================
 
         stage('Runtime Configuration') {
@@ -79,12 +71,16 @@ pipeline {
                     echo "=== DP ANSIBLE RUNTIME CONFIGURATION ==="
                     echo "EKS_RUNTIME_ENABLED=${EKS_RUNTIME_ENABLED}"
                     echo "ANSIBLE_INVENTORY=${ANSIBLE_INVENTORY}"
+                    echo "PLAYBOOK=playbooks/platform_ops.yml"
+                    echo "ANSIBLE_TAG=aws_load_balancer_controller"
                 '''
             }
         }
 
         // ==================================================================
         // Syntax Check
+        //
+        // Validate the Platform Ops playbook containing the targeted role.
         // ==================================================================
 
         stage('Syntax Check') {
@@ -103,7 +99,7 @@ pipeline {
 
                         ansible-playbook \
                           -i "$ANSIBLE_INVENTORY" \
-                          playbooks/site.yml \
+                          playbooks/platform_ops.yml \
                           --vault-password-file .vault-pass \
                           --extra-vars "eks_runtime_enabled=$EKS_RUNTIME_ENABLED" \
                           --syntax-check
@@ -115,20 +111,19 @@ pipeline {
         }
 
         // ==================================================================
-        // Deploy DP Platform
+        // Deploy AWS Load Balancer Controller
         //
-        // EKS-dependent roles are controlled by eks_runtime_enabled.
+        // Temporary targeted execution used to validate and repair the
+        // existing AWS Load Balancer Controller Helm release.
         //
-        // When false:
-        //   - normal EC2/platform configuration can run
-        //   - EKS-dependent roles remain disabled
+        // Only the role tagged:
         //
-        // When true:
-        //   - AWS Load Balancer Controller can deploy
-        //   - kube-prometheus-stack can deploy
+        //   aws_load_balancer_controller
+        //
+        // is executed.
         // ==================================================================
 
-        stage('Deploy DP Platform') {
+        stage('Deploy AWS Load Balancer Controller') {
             steps {
                 withCredentials([
                     string(
@@ -144,13 +139,44 @@ pipeline {
 
                         ansible-playbook \
                           -i "$ANSIBLE_INVENTORY" \
-                          playbooks/site.yml \
+                          playbooks/platform_ops.yml \
                           --vault-password-file .vault-pass \
-                          --extra-vars "eks_runtime_enabled=$EKS_RUNTIME_ENABLED"
+                          --extra-vars "eks_runtime_enabled=$EKS_RUNTIME_ENABLED" \
+                          --tags aws_load_balancer_controller
 
                         rm -f .vault-pass
                     '''
                 }
+            }
+        }
+
+        // ==================================================================
+        // Verify AWS Load Balancer Controller
+        // ==================================================================
+
+        stage('Verify AWS Load Balancer Controller') {
+            when {
+                expression {
+                    return params.EKS_RUNTIME_ENABLED
+                }
+            }
+
+            steps {
+                sh '''
+                    echo "=== AWS LOAD BALANCER CONTROLLER DEPLOYMENT ==="
+
+                    kubectl get deployment \
+                      aws-load-balancer-controller \
+                      --namespace kube-system
+
+                    echo
+                    echo "=== AWS LOAD BALANCER CONTROLLER PODS ==="
+
+                    kubectl get pods \
+                      --namespace kube-system \
+                      --selector app.kubernetes.io/name=aws-load-balancer-controller \
+                      -o wide
+                '''
             }
         }
     }
@@ -159,9 +185,6 @@ pipeline {
 
         // ==================================================================
         // Cleanup
-        //
-        // Ensures the temporary Vault password file is removed even if
-        // Ansible fails before its normal cleanup command is reached.
         // ==================================================================
 
         always {
@@ -175,11 +198,11 @@ pipeline {
         // ==================================================================
 
         success {
-            echo 'DP platform configuration completed successfully.'
+            echo 'DP AWS Load Balancer Controller deployment completed successfully.'
         }
 
         failure {
-            echo 'DP platform configuration failed.'
+            echo 'DP AWS Load Balancer Controller deployment failed.'
         }
     }
 }
