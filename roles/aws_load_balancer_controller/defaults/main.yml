@@ -33,6 +33,20 @@ aws_lbc_cluster_name: dp-eks-cluster
 aws_lbc_service_account_name: aws-load-balancer-controller
 
 # ============================================================================
+# AWS Configuration
+#
+# The VPC ID is intentionally empty by default.
+#
+# When no explicit VPC ID is supplied, the role discovers the VPC directly
+# from the EKS cluster using the AWS API. This avoids relying on EC2 Instance
+# Metadata Service (IMDS) from inside the controller pods and also avoids
+# hard-coding a VPC ID that would change after infrastructure recreation.
+# ============================================================================
+
+aws_lbc_region: us-east-2
+aws_lbc_vpc_id: ""
+
+# ============================================================================
 # Controller
 # ============================================================================
 

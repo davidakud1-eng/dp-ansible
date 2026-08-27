@@ -9,6 +9,60 @@
   block:
 
     # ==========================================================================
+    # Discover EKS VPC
+    #
+    # The AWS Load Balancer Controller can attempt to discover the VPC through
+    # EC2 instance metadata. DP supplies the VPC explicitly instead.
+    #
+    # If aws_lbc_vpc_id is not provided, query the EKS API for the VPC that
+    # currently owns the cluster. This remains valid after destroy/recreate
+    # operations where the VPC receives a new AWS resource ID.
+    # ==========================================================================
+
+    - name: Discover EKS cluster VPC ID
+      become: false
+      ansible.builtin.command:
+        cmd: >
+          aws eks describe-cluster
+          --region {{ aws_lbc_region }}
+          --name {{ aws_lbc_cluster_name }}
+          --query cluster.resourcesVpcConfig.vpcId
+          --output text
+      register: aws_lbc_vpc_discovery
+      changed_when: false
+      when: aws_lbc_vpc_id | length == 0
+
+    # ==========================================================================
+    # Determine Effective VPC ID
+    # ==========================================================================
+
+    - name: Set AWS Load Balancer Controller VPC ID
+      ansible.builtin.set_fact:
+        aws_lbc_effective_vpc_id: >-
+          {{
+            aws_lbc_vpc_id
+            if aws_lbc_vpc_id | length > 0
+            else aws_lbc_vpc_discovery.stdout | trim
+          }}
+
+    # ==========================================================================
+    # Validate VPC Discovery
+    #
+    # Fail before Helm deployment if AWS did not return a valid VPC ID.
+    # ==========================================================================
+
+    - name: Verify AWS Load Balancer Controller VPC ID
+      ansible.builtin.assert:
+        that:
+          - aws_lbc_effective_vpc_id is match('^vpc-[0-9a-f]+$')
+        fail_msg: >-
+          Unable to determine the VPC ID for EKS cluster
+          {{ aws_lbc_cluster_name }}.
+        success_msg: >-
+          Using EKS VPC {{ aws_lbc_effective_vpc_id }}
+          for the AWS Load Balancer Controller.
+
+    # ==========================================================================
     # Add AWS EKS Helm Repository
     # ==========================================================================
 
@@ -36,6 +90,9 @@
 
     # ==========================================================================
     # Install or Upgrade AWS Load Balancer Controller
+    #
+    # vpcId is supplied explicitly so that the controller does not need to
+    # discover the VPC through EC2 instance metadata from inside its pods.
     # ==========================================================================
 
     - name: Install or upgrade AWS Load Balancer Controller
@@ -48,6 +105,7 @@
           --namespace {{ aws_lbc_namespace }}
           --version {{ aws_lbc_chart_version }}
           --set clusterName={{ aws_lbc_cluster_name }}
+          --set vpcId={{ aws_lbc_effective_vpc_id }}
           --set serviceAccount.create=true
           --set serviceAccount.name={{ aws_lbc_service_account_name }}
           --set replicaCount={{ aws_lbc_replica_count }}
