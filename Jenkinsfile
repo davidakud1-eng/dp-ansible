@@ -26,7 +26,7 @@ pipeline {
         // are allowed to deploy.
         // ================================================================
 
-        EKS_RUNTIME_ENABLED = 'false'
+        EKS_RUNTIME_ENABLED = 'true'
     }
 
     stages {
