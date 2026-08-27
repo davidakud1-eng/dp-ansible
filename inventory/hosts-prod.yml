@@ -20,6 +20,7 @@ all:
       hosts:
         jenkins-controller:
           ansible_host: "{{ jenkins_controller_private_ip }}"
+          private_ip: "{{ jenkins_controller_private_ip }}"
 
     # ==========================================================================
     # Permanent Build Agent
@@ -29,6 +30,7 @@ all:
       hosts:
         build-agent:
           ansible_host: "{{ build_agent_private_ip }}"
+          private_ip: "{{ build_agent_private_ip }}"
 
     # ==========================================================================
     # Platform Operations Server
@@ -38,6 +40,7 @@ all:
       hosts:
         platform-ops:
           ansible_host: "{{ platform_ops_private_ip }}"
+          private_ip: "{{ platform_ops_private_ip }}"
           ansible_connection: local
 
     # ==========================================================================
