@@ -45,6 +45,34 @@ pipeline {
         }
 
         // ==================================================================
+        // Install Ansible Collections
+        //
+        // Installs the Ansible collection dependencies declared in
+        // requirements.yml into the Jenkins workspace on the Platform Ops
+        // agent.
+        //
+        // This makes the pipeline reproducible and prevents deployments
+        // from depending on manually installed Ansible collections.
+        // ==================================================================
+
+        stage('Install Ansible Collections') {
+            steps {
+                sh '''
+                    echo "=== INSTALL ANSIBLE COLLECTIONS ==="
+
+                    ansible-galaxy collection install \
+                      -r requirements.yml \
+                      -p ./collections
+
+                    echo
+                    echo "=== INSTALLED ANSIBLE COLLECTIONS ==="
+
+                    ansible-galaxy collection list
+                '''
+            }
+        }
+
+        // ==================================================================
         // Verify Ansible
         // ==================================================================
 

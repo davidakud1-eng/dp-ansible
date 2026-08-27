@@ -1,30 +1,35 @@
 ---
 # ============================================================================
 # DP kube-prometheus-stack
-# Installs the EKS monitoring platform using Helm
+# Installs and manages the EKS monitoring platform using Helm
 # ============================================================================
 
 - name: Manage kube-prometheus-stack
   when: eks_runtime_enabled | bool
   block:
 
-    - name: Add Prometheus Community Helm repository
-      become: false
-      ansible.builtin.command:
-        cmd: >
-          helm repo add
-          {{ kps_helm_repo_name }}
-          {{ kps_helm_repo_url }}
-          --force-update
-      register: kps_helm_repo_add
-      changed_when: >
-        'has been added' in kps_helm_repo_add.stdout
+    # ==========================================================================
+    # Prometheus Community Helm Repository
+    #
+    # Managed declaratively using kubernetes.core.helm_repository.
+    # Ansible ensures the repository exists rather than executing
+    # "helm repo add" on every pipeline run.
+    # ==========================================================================
 
-    - name: Update Helm repository cache
+    - name: Ensure Prometheus Community Helm repository is configured
       become: false
-      ansible.builtin.command:
-        cmd: helm repo update
-      changed_when: false
+      kubernetes.core.helm_repository:
+        name: "{{ kps_helm_repo_name }}"
+        repo_url: "{{ kps_helm_repo_url }}"
+        state: present
+
+    # ==========================================================================
+    # kube-prometheus-stack Values
+    #
+    # Render the DP-specific Helm values used by the release.
+    # The template module is idempotent and reports a change only
+    # when the rendered file content changes.
+    # ==========================================================================
 
     - name: Render kube-prometheus-stack values
       become: false
@@ -33,18 +38,25 @@
         dest: /tmp/dp-kube-prometheus-stack-values.yaml
         mode: "0600"
 
-    - name: Install or upgrade kube-prometheus-stack
+    # ==========================================================================
+    # kube-prometheus-stack Helm Release
+    #
+    # Managed declaratively using kubernetes.core.helm.
+    # Ansible ensures that the desired release exists with the
+    # DP values rather than executing "helm upgrade --install"
+    # unconditionally on every pipeline run.
+    # ==========================================================================
+
+    - name: Ensure kube-prometheus-stack is deployed
       become: false
-      ansible.builtin.command:
-        cmd: >
-          helm upgrade --install
-          {{ kps_release_name }}
-          {{ kps_chart_name }}
-          --namespace {{ kps_namespace }}
-          --create-namespace
-          --values /tmp/dp-kube-prometheus-stack-values.yaml
-          --wait
-          --timeout 10m
-      register: kps_helm_install
-      changed_when: >
-        'STATUS: deployed' in kps_helm_install.stdout
+      kubernetes.core.helm:
+        name: "{{ kps_release_name }}"
+        chart_ref: "{{ kps_chart_name }}"
+        release_namespace: "{{ kps_namespace }}"
+        create_namespace: true
+        values_files:
+          - /tmp/dp-kube-prometheus-stack-values.yaml
+        reset_values: true
+        wait: true
+        timeout: 10m
+        state: present
