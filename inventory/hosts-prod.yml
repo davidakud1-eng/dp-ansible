@@ -38,6 +38,7 @@ all:
       hosts:
         platform-ops:
           ansible_host: "{{ platform_ops_private_ip }}"
+          ansible_connection: local
 
     # ==========================================================================
     # Entire Platform
