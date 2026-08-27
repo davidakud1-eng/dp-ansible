@@ -11,7 +11,7 @@ pipeline {
         // ================================================================
         // EKS Runtime Control
         //
-        // Must be enabled for the AWS Load Balancer Controller role
+        // Must be enabled for the kube-prometheus-stack role
         // to execute.
         // ================================================================
 
@@ -72,7 +72,7 @@ pipeline {
                     echo "EKS_RUNTIME_ENABLED=${EKS_RUNTIME_ENABLED}"
                     echo "ANSIBLE_INVENTORY=${ANSIBLE_INVENTORY}"
                     echo "PLAYBOOK=playbooks/platform_ops.yml"
-                    echo "ANSIBLE_TAG=aws_load_balancer_controller"
+                    echo "ANSIBLE_TAG=kube_prometheus_stack"
                 '''
             }
         }
@@ -111,19 +111,19 @@ pipeline {
         }
 
         // ==================================================================
-        // Deploy AWS Load Balancer Controller
+        // Deploy kube-prometheus-stack
         //
-        // Temporary targeted execution used to validate and repair the
-        // existing AWS Load Balancer Controller Helm release.
+        // Temporary targeted execution used to validate the
+        // kube-prometheus-stack Helm release.
         //
         // Only the role tagged:
         //
-        //   aws_load_balancer_controller
+        //   kube_prometheus_stack
         //
         // is executed.
         // ==================================================================
 
-        stage('Deploy AWS Load Balancer Controller') {
+        stage('Deploy kube-prometheus-stack') {
             steps {
                 withCredentials([
                     string(
@@ -142,7 +142,7 @@ pipeline {
                           playbooks/platform_ops.yml \
                           --vault-password-file .vault-pass \
                           --extra-vars "eks_runtime_enabled=$EKS_RUNTIME_ENABLED" \
-                          --tags aws_load_balancer_controller
+                          --tags kube_prometheus_stack
 
                         rm -f .vault-pass
                     '''
@@ -151,10 +151,19 @@ pipeline {
         }
 
         // ==================================================================
-        // Verify AWS Load Balancer Controller
+        // Verify kube-prometheus-stack
+        //
+        // Verify the Helm release and the major monitoring resources:
+        //   - Prometheus
+        //   - Grafana
+        //   - Alertmanager
+        //   - Prometheus Operator
+        //   - kube-state-metrics
+        //   - node-exporter
+        //   - Prometheus persistent storage
         // ==================================================================
 
-        stage('Verify AWS Load Balancer Controller') {
+        stage('Verify kube-prometheus-stack') {
             when {
                 expression {
                     return params.EKS_RUNTIME_ENABLED
@@ -163,19 +172,29 @@ pipeline {
 
             steps {
                 sh '''
-                    echo "=== AWS LOAD BALANCER CONTROLLER DEPLOYMENT ==="
-
-                    kubectl get deployment \
-                      aws-load-balancer-controller \
-                      --namespace kube-system
+                    echo "=== MONITORING NAMESPACE ==="
+                    kubectl get namespace monitoring
 
                     echo
-                    echo "=== AWS LOAD BALANCER CONTROLLER PODS ==="
+                    echo "=== KUBE-PROMETHEUS-STACK HELM RELEASE ==="
+                    helm list \
+                      --namespace monitoring
 
+                    echo
+                    echo "=== MONITORING PODS ==="
                     kubectl get pods \
-                      --namespace kube-system \
-                      --selector app.kubernetes.io/name=aws-load-balancer-controller \
+                      --namespace monitoring \
                       -o wide
+
+                    echo
+                    echo "=== MONITORING SERVICES ==="
+                    kubectl get services \
+                      --namespace monitoring
+
+                    echo
+                    echo "=== PROMETHEUS PVC ==="
+                    kubectl get pvc \
+                      --namespace monitoring
                 '''
             }
         }
@@ -198,11 +217,11 @@ pipeline {
         // ==================================================================
 
         success {
-            echo 'DP AWS Load Balancer Controller deployment completed successfully.'
+            echo 'DP kube-prometheus-stack deployment completed successfully.'
         }
 
         failure {
-            echo 'DP AWS Load Balancer Controller deployment failed.'
+            echo 'DP kube-prometheus-stack deployment failed.'
         }
     }
 }
